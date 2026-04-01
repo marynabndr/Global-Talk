@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- Шапка: Логотип, Навігація, Авторизація -->
     <header class="header">
         <div class="container header__content">
             <div class="logo">Global<span>Talk</span></div>
@@ -19,6 +20,13 @@
                     <li><a href="#contact" class="nav__link">Контакти</a></li>
                 </ul>
             </nav>
+            
+            <div class="header__auth">
+                <span id="user-status"></span>
+                <button id="login-open-btn" class="btn btn--outline" style="padding: 0.5rem 1rem;">Увійти</button>
+                <button id="logout-btn" class="btn btn--outline hidden" style="padding: 0.5rem 1rem;">Вийти</button>
+            </div>
+
             <button class="burger" id="burger-btn" aria-label="Menu">
                 <span></span>
             </button>
@@ -26,136 +34,101 @@
     </header>
 
     <main>
+        <!-- Головний блок (Hero) -->
         <section class="hero">
             <div class="container">
                 <div class="hero__badge">Твій шлях до вільного спілкування</div>
                 <h1>Відкрий світ з Global Talk</h1>
-                <p>Ефективне навчання іноземних мов з використанням передових методик 2026 року.</p>
+                <p>Ефективне навчання з передовими методиками.</p>
                 <div class="hero__btns">
                     <a href="#courses" class="btn btn--primary">Обрати курс</a>
-                    <a href="#contact" class="btn btn--outline">Консультація</a>
+                    <button onclick="requestConsultation()" class="btn btn--outline">Консультація</button>
                 </div>
             </div>
         </section>
 
+        <!-- Про нас -->
         <section class="about" id="about-us">
             <div class="container">
                 <div class="about__wrapper">
                     <div class="about__content">
                         <div class="course-tag">Наша історія</div>
                         <h2 class="about__title">Більше ніж просто школа мов</h2>
-                        <p class="about__text">
-                            Global Talk була заснована у 2018 році з однією метою — зламати мовні бар'єри та зробити навчання захопливою пригодою. Ми не змушуємо зубрити правила, ми вчимо вас **думати** іноземною мовою.
-                        </p>
-                        <p class="about__text">
-                            Використовуючи комунікативну методику та інтерактивні платформи, ми допомагаємо студентам досягати результатів у 2 рази швидше, ніж у класичних школах.
-                        </p>
-                        
+                        <p class="about__text">Ми вчимо думати іноземною мовою з 2018 року.</p>
                         <div class="about__stats">
-                            <div class="stat-item">
-                                <span class="stat-number">1500+</span>
-                                <span class="stat-desc">Студентів</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-number">98%</span>
-                                <span class="stat-desc">Успішних іспитів</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-number">12</span>
-                                <span class="stat-desc">Авторських курсів</span>
-                            </div>
+                            <div class="stat-item"><span class="stat-number">1500+</span><span class="stat-desc">Студентів</span></div>
+                            <div class="stat-item"><span class="stat-number">98%</span><span class="stat-desc">Успіхів</span></div>
                         </div>
                     </div>
-                    
                     <div class="about__image">
-                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" alt="Команда Global Talk">
-                        <div class="about__experience-badge">
-                            <strong>8 років</strong>
-                            <span>на ринку освіти</span>
-                        </div>
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" alt="Команда">
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Курси (динамічно з БД) -->
         <section class="courses" id="courses">
             <div class="container">
                 <h2 class="section-title">Популярні напрямки</h2>
-                <div class="courses-grid">
-                    <article class="course-card">
-                        <div class="course-card__info">
-                            <div class="course-tag">English</div>
-                            <h3>Англійська мова</h3>
-                            <p>Рівні: A1 - C2. Підготовка до IELTS та TOEFL за авторською методикою.</p>
-                            <span class="price">від 450 грн / год</span>
-                        </div>
-                        <button class="btn btn--card">Записатися</button>
-                    </article>
-
-                    <article class="course-card">
-                        <div class="course-card__info">
-                            <div class="course-tag">German</div>
-                            <h3>Німецька мова</h3>
-                            <p>Курси для роботи та переїзду. Підготовка до TestDaF та Goethe-Zertifikat.</p>
-                            <span class="price">від 500 грн / год</span>
-                        </div>
-                        <button class="btn btn--card">Записатися</button>
-                    </article>
-
-                    <article class="course-card">
-                        <div class="course-card__info">
-                            <div class="course-tag">Polish</div>
-                            <h3>Польська мова</h3>
-                            <p>Швидка підготовка до Карти Поляка та вступу до провідних ВНЗ Польщі.</p>
-                            <span class="price">від 400 грн / год</span>
-                        </div>
-                        <button class="btn btn--card">Записатися</button>
-                    </article>
+                <div class="courses-grid" id="courses-container">
+                    <p>Завантаження курсів...</p>
                 </div>
             </div>
         </section>
 
+        <!-- Викладачі (динамічно з БД) -->
         <section class="teachers" id="teachers">
             <div class="container">
                 <h2 class="section-title">Наші експерти</h2>
-                <div class="teachers-grid">
-                    <article class="teacher-card reveal">
-                        <div class="teacher-card__img">
-                            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=500&q=80" alt="Олена Петренко — викладач англійської">
-                        </div>
-                        <div class="teacher-card__content">
-                            <p class="teacher-card__spec">English Tutor (C2)</p>
-                            <h3>Олена Петренко</h3>
-                            <p>8 років практики в Лондоні. Спеціалізується на підготовці до міжнародних іспитів.</p>
-                        </div>
-                    </article>
+                <div class="teachers-grid" id="teachers-container">
+                    <p>Завантаження викладачів...</p>
+                </div>
+            </div>
+        </section>
 
-                    <article class="teacher-card reveal">
-                        <div class="teacher-card__img">
-                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=600&q=80" alt="Маркус Шмідт — носій німецької">
-                        </div>
-                        <div class="teacher-card__content">
-                            <p class="teacher-card__spec">Native Speaker</p>
-                            <h3>Маркус Шмідт</h3>
-                            <p>Експерт з бізнес-комунікації. Допоможе подолати мовний бар'єр за 2 місяці.</p>
-                        </div>
-                    </article>
-
-                    <article class="teacher-card reveal">
-                        <div class="teacher-card__img">
-                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80" alt="Анна Ковальська — викладач польської">
-                        </div>
-                        <div class="teacher-card__content">
-                            <p class="teacher-card__spec">Polish Expert</p>
-                            <h3>Анна Ковальська</h3>
-                            <p>Магістр філології. Спеціаліст з інтенсивної підготовки до Карти Поляка.</p>
-                        </div>
-                    </article>
+        <!-- Відгуки (динамічно з БД) -->
+        <section class="reviews" id="reviews" style="padding: 8rem 0; background: var(--light);">
+            <div class="container">
+                <h2 class="section-title">Відгуки наших студентів</h2>
+                <div class="reviews-grid" id="reviews-container">
+                    <p>Завантаження відгуків...</p>
                 </div>
             </div>
         </section>
     </main>
 
+    <!-- Модальне вікно: Вхід та Реєстрація -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            
+            <!-- Форма входу -->
+            <div id="login-view">
+                <h3>Вхід в акаунт</h3>
+                <div class="auth-form">
+                    <input type="email" id="login-email" placeholder="Email">
+                    <input type="password" id="login-password" placeholder="Пароль">
+                    <button id="login-submit-btn" class="btn btn--primary" style="width: 100%;">Увійти</button>
+                    <p style="text-align: center; margin-top: 15px;">Немає акаунта? <a href="#" id="go-to-reg">Зареєструватися</a></p>
+                </div>
+            </div>
+
+            <!-- Форма реєстрації -->
+            <div id="register-view" class="hidden">
+                <h3>Реєстрація</h3>
+                <div class="auth-form">
+                    <input type="text" id="reg-name" placeholder="Ваше ім'я">
+                    <input type="email" id="reg-email" placeholder="Email">
+                    <input type="password" id="reg-password" placeholder="Пароль">
+                    <button id="reg-submit-btn" class="btn btn--primary" style="width: 100%;">Створити акаунт</button>
+                    <p style="text-align: center; margin-top: 15px;">Вже є акаунт? <a href="#" id="go-to-login">Увійти</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер -->
     <footer class="footer" id="contact">
         <div class="container footer__content">
             <div class="footer__info">
@@ -169,6 +142,7 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <!-- Основна логіка -->
+    <script src="main.js"></script>
 </body>
 </html>

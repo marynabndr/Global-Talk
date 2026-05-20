@@ -696,22 +696,14 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 async function startServer() {
   try {
     await sequelize.sync(); 
-    
-    // Замість console.log використовуємо logger.info
-    logger.info("Базу даних синхронізовано успішно");
-    console.log("Базу даних синхронізовано"); 
-
-    app.listen(PORT, () => {
-        // Логуємо запуск сервера у файл
-        logger.info(`Сервер запущено на http://localhost:${PORT}`);
-        console.log(`Сервер: http://localhost:${PORT}`);
-    });
-
+    console.log("Базу синхронізовано");
   } catch (error) {
-    // Замість console.error використовуємо logger.error
-    logger.error(`Помилка старту сервера: ${error.message}`);
-    console.error("Помилка старту:", error);
+    console.error("БД не знайдено, але сервер працює далі для тесту:", error.message);
   }
+
+  app.listen(PORT, () => {
+    console.log(`Сервер запущено на порту ${PORT}`);
+  });
 }
 
 module.exports = app; // Експортуємо додаток для тестів

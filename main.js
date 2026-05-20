@@ -11,12 +11,12 @@ const coursesContainer = document.getElementById('courses-container');
 const teachersContainer = document.getElementById('teachers-container');
 const reviewsContainer = document.getElementById('reviews-container');
 
-// Перемикання між входом і реєстрацією 
 const loginView = document.getElementById('login-view');
 const registerView = document.getElementById('register-view');
 const goToReg = document.getElementById('go-to-reg');
 const goToLogin = document.getElementById('go-to-login');
 
+// Перемикання між входом і реєстрацією 
 if (goToReg) {
     goToReg.onclick = (e) => {
         e.preventDefault();
@@ -24,7 +24,6 @@ if (goToReg) {
         registerView.classList.remove('hidden');
     };
 }
-
 if (goToLogin) {
     goToLogin.onclick = (e) => {
         e.preventDefault();
@@ -33,13 +32,20 @@ if (goToLogin) {
     };
 }
 
-// Завантаження курсів з бд 
+// Завантаження курсів
 async function fetchCourses() {
     try {
         const response = await fetch('http://localhost:3000/api/courses');
-        const courses = await response.json();
+        const result = await response.json();
         
-        if (courses.length > 0) {
+        // Перевіряємо, чи дані лежать у полі .data (якщо працює кеш), 
+        // чи прийшли просто масивом
+        const courses = result.data ? result.data : result;
+        
+        // Відображення "Джерела даних" у консолі 
+        if (result.source) console.log(`Курси отримано з: ${result.source}`);
+
+        if (Array.isArray(courses) && courses.length > 0) {
             coursesContainer.innerHTML = courses.map(course => `
                 <article class="course-card">
                     <div class="course-card__info">
@@ -56,15 +62,15 @@ async function fetchCourses() {
         }
     } catch (err) {
         console.error("Помилка курсів:", err);
+        coursesContainer.innerHTML = "<p>Помилка завантаження курсів.</p>";
     }
 }
 
-//Завантаження квикладачів з бд 
+// Завантаження викладачів
 async function loadTeachers() {
     try {
         const response = await fetch('http://localhost:3000/api/teachers');
         const teachers = await response.json();
-
         if (teachers.length > 0) {
             teachersContainer.innerHTML = teachers.map(t => `
                 <article class="teacher-card active">
@@ -79,54 +85,46 @@ async function loadTeachers() {
                 </article>
             `).join('');
         }
-    } catch (err) {
-        console.error("Помилка викладачів:", err);
-    }
+    } catch (err) { console.error("Помилка викладачів:", err); }
 }
 
-// Завантаження відгуків з бд
+// Завантаження відгуків
 async function loadReviews() {
     try {
         const response = await fetch('http://localhost:3000/api/reviews');
         const reviews = await response.json();
-
         if (reviews.length > 0) {
             reviewsContainer.innerHTML = reviews.map(r => `
                 <article class="course-card" style="padding: 2rem;">
-                    <div style="color: #ffc107; margin-bottom: 1rem;">
-                        ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
-                    </div>
+                    <div style="color: #ffc107; margin-bottom: 1rem;">★ ★ ★ ★ ★</div>
                     <p style="font-style: italic; margin-bottom: 1.5rem;">"${r.text}"</p>
                     <h4 style="color: var(--primary); font-weight: 700;">${r.client_name}</h4>
                 </article>
             `).join('');
         }
-    } catch (err) {
-        console.error("Помилка відгуків:", err);
-    }
+    } catch (err) { console.error("Помилка відгуків:", err); }
 }
 
-//  Логіка авторизації
-// Перевірка сесії користувача
+// ПЕРЕВІРКА СТАТУСУ (JWT)
 function checkAuthStatus() {
     const user = JSON.parse(localStorage.getItem('gt_user'));
-    if (user) {
+    const token = localStorage.getItem('token');
+
+    if (token && user) {
         userStatus.textContent = `Привіт, ${user.name}!`;
-        loginOpenBtn.classList.add('hidden');
-        logoutBtn.classList.remove('hidden');
+        if (loginOpenBtn) loginOpenBtn.classList.add('hidden');
+        if (logoutBtn) logoutBtn.classList.remove('hidden');
     } else {
         userStatus.textContent = '';
-        loginOpenBtn.classList.remove('hidden');
-        logoutBtn.classList.add('hidden');
+        if (loginOpenBtn) loginOpenBtn.classList.remove('hidden');
+        if (logoutBtn) logoutBtn.classList.add('hidden');
     }
 }
 
-// Вхід в акаунт
+//  ВХІД 
 async function handleLogin() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-
-    if (!email || !password) return alert("Заповніть поля!");
 
     try {
         const response = await fetch('http://localhost:3000/api/login', {
@@ -135,108 +133,77 @@ async function handleLogin() {
             body: JSON.stringify({ email, password })
         });
         const data = await response.json();
+
         if (data.success) {
-            localStorage.setItem('gt_user', JSON.stringify(data.user));
+            localStorage.setItem('token', data.accessToken); // Зберігаємо токен
+            localStorage.setItem('gt_user', JSON.stringify(data.user)); // Зберігаємо інфо про юзера
             location.reload();
         } else {
             alert(data.message);
         }
-    } catch (err) {
-        alert("Помилка з'єднання.");
-    }
+    } catch (err) { alert("Помилка з'єднання з сервером."); }
 }
 
-// Реєстрація нового користувача
+// РЕЄСТРАЦІЯ 
 async function handleRegister() {
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
-
-    if (!name || !email || !password) return alert("Заповніть всі поля!");
+    const confirmPassword = document.getElementById('reg-confirm-password')?.value || password; // Підтримка підтвердження
 
     try {
         const response = await fetch('http://localhost:3000/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password })
+            body: JSON.stringify({ name, email, password, confirmPassword })
         });
         const data = await response.json();
         if (data.success) {
-            localStorage.setItem('gt_user', JSON.stringify(data.user));
+            alert("Реєстрація успішна! Тепер увійдіть.");
             location.reload();
         } else {
-            alert(data.message);
+            alert(data.message || "Помилка валідації");
         }
-    } catch (err) {
-        alert("Помилка реєстрації.");
-    }
+    } catch (err) { alert("Помилка реєстрації."); }
 }
 
-// Вихід з акаунта
+// ВИХІД
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
         localStorage.removeItem('gt_user');
         location.reload();
     });
 }
 
-// Створення заявок
-// Запис на конкретний курс
+// СТВОРЕННЯ ЗАЯВКИ (З ТОКЕНОМ)
 async function createOrder(courseId) {
-    const user = JSON.parse(localStorage.getItem('gt_user'));
-    if (!user) return alert("Будь ласка, увійдіть в акаунт.");
+    const token = localStorage.getItem('token');
+    if (!token) return alert("Будь ласка, увійдіть в акаунт.");
 
     const phone = prompt("Введіть ваш номер телефону:");
     if (!phone) return;
 
-    await fetch('http://localhost:3000/api/apply', {
+    const response = await fetch('http://localhost:3000/api/apply', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, courseId, phone })
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // ПРЕД'ЯВЛЯЄМО ТОКЕН
+        },
+        body: JSON.stringify({ courseId, phone })
     });
-    alert("Заявка відправлена!");
+    
+    if (response.ok) alert("Заявка відправлена!");
+    else alert("Помилка при відправці.");
 }
 
-// Загальна консультація
-async function requestConsultation() {
-    const user = JSON.parse(localStorage.getItem('gt_user'));
-    if (!user) {
-        loginModal.style.display = 'flex';
-        return;
-    }
-
-    const phone = prompt("Ваш телефон для консультації:");
-    if (!phone) return;
-
-    await fetch('http://localhost:3000/api/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, courseId: null, phone })
-    });
-    alert("Очікуйте на дзвінок!");
-}
-
-// Керевання модальним вікном
-if (loginOpenBtn) loginOpenBtn.onclick = () => {
-    loginModal.style.display = 'flex';
-    loginView.classList.remove('hidden');
-    registerView.classList.add('hidden');
-};
-
+// Управління модалкою
+if (loginOpenBtn) loginOpenBtn.onclick = () => { loginModal.style.display = 'flex'; };
 if (closeModal) closeModal.onclick = () => loginModal.style.display = 'none';
 if (loginSubmitBtn) loginSubmitBtn.onclick = handleLogin;
 if (regSubmitBtn) regSubmitBtn.onclick = handleRegister;
 
-window.onclick = (e) => { if (e.target == loginModal) loginModal.style.display = 'none'; };
-
-// Меню
-const burgerBtn = document.getElementById('burger-btn');
-const navMenu = document.getElementById('nav');
-if (burgerBtn) {
-    burgerBtn.addEventListener('click', () => navMenu.classList.toggle('nav--active'));
-}
-
-// Ініціалізація при завантаженні
+// Ініціалізація
 document.addEventListener('DOMContentLoaded', () => {
     fetchCourses();
     loadTeachers();
